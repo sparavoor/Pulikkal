@@ -6,7 +6,7 @@ import { LayoutDashboard, Users, Calendar, Briefcase, LogOut, BadgeDollarSign } 
 import { handleSignOut } from '@/lib/actions';
 import { cn } from '@/lib/utils';
 
-export default function PortalSidebar({ user }: { user: any }) {
+export default function PortalSidebar({ user }: { user: Record<string, any> | null | undefined }) {
     const pathname = usePathname();
 
     const directorateRole = user?.directorateRole || user?.directoratePosition || 'Secretariat';

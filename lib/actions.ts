@@ -194,7 +194,7 @@ const MemberSchema = z.object({
 });
 
 export async function createMember(prevState: string | undefined, formData: FormData) {
-    const rawFormData: any = Object.fromEntries(formData.entries());
+    const rawFormData = Object.fromEntries(formData.entries()) as Record<string, any>;
     if (rawFormData.sectorId === '') rawFormData.sectorId = null;
     if (rawFormData.unitId === '') rawFormData.unitId = null;
 

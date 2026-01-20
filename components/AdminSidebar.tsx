@@ -6,7 +6,7 @@ import { LayoutDashboard, Users, Calendar, Briefcase, Building, LogOut, FileText
 import { handleSignOut } from '@/lib/actions';
 import { cn } from '@/lib/utils';
 
-export default function AdminSidebar({ user }: { user: any }) {
+export default function AdminSidebar({ user }: { user: Record<string, any> | null | undefined }) {
     const pathname = usePathname();
 
     const role = user?.role;
@@ -33,7 +33,7 @@ export default function AdminSidebar({ user }: { user: any }) {
         }
 
         // Default Role Check
-        if (link.roles.includes(role)) return true;
+        if (role && link.roles.includes(role)) return true;
 
         return false;
     });
