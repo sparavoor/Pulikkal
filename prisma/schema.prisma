@@ -1,0 +1,148 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Models
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique // Mobile number
+  password  String
+  name      String
+  
+  role            String   @default("MEMBER") // DIVISION_ADMIN, SECTOR_SECRETARY, etc.
+  directorateRole String?  @default("NONE") // e.g., "ASSISTANT_DIRECTOR"
+  directoratePosition String? // To store custom position if needed or strict enum
+  
+  // Hierarchy Links
+  sectorId  String?
+  sector    Sector?  @relation(fields: [sectorId], references: [id])
+  unitId    String?
+  unit      Unit?    @relation(fields: [unitId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Sector {
+  id        String   @id @default(cuid())
+  name      String   @unique // e.g., Vazahayoor, Ayikarappadi
+  
+  units     Unit[]
+  users     User[]
+  members   Member[]
+  meetings  Meeting[]
+  finance   CashbookEntry[]
+  projects  Project[]
+}
+
+model Unit {
+  id        String   @id @default(cuid())
+  name      String
+  
+  sectorId  String
+  sector    Sector   @relation(fields: [sectorId], references: [id])
+  
+  users     User[]
+  members   Member[]
+}
+
+model Member {
+  id        String   @id @default(cuid())
+  name      String
+  mobile    String?
+  
+  unitId    String?
+  unit      Unit?    @relation(fields: [unitId], references: [id])
+  
+  sectorId  String?
+  sector    Sector?  @relation(fields: [sectorId], references: [id]) // Denormalized for Sector Members usually
+  
+  attendance Attendance[]
+}
+
+model Meeting {
+  id        String      @id @default(cuid())
+  title     String
+  type      String      // SECRETARIAT, EXECUTIVE, etc.
+  date      DateTime
+  time      String
+  participantRole String?
+  
+  // Who created/owns this meeting?
+  sectorId  String?
+  sector    Sector?     @relation(fields: [sectorId], references: [id])
+  
+  attendance Attendance[]
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  meetingId String
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  
+  status    Boolean  @default(false) // Present or Absent
+  
+  @@unique([meetingId, memberId])
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  scheme    String
+  
+  // Scope
+  scopeUnit   Boolean @default(false)
+  scopeSector Boolean @default(false)
+  
+  // Linked Sector (if applicable)
+  sectorId  String?
+  sector    Sector? @relation(fields: [sectorId], references: [id])
+  
+  createdAt DateTime @default(now())
+}
+
+model Event {
+  id        String   @id @default(cuid())
+  title     String
+  date      DateTime
+  description String?
+}
+
+model TransactionCategory {
+  id        String   @id @default(cuid())
+  name      String
+  type      String   // INCOME / EXPENSE
+  sectorId  String?  // If null, it's a global/default category. If set, specific to sector.
+  
+  entries   CashbookEntry[]
+}
+
+model CashbookEntry {
+  id          String   @id @default(cuid())
+  amount      Float
+  type        String   // INCOME / EXPENSE
+  description String
+  date        DateTime @default(now())
+  
+  paymentMode String   @default("CASH") // CASH, ONLINE
+  
+  street      String?  // Optional simplified "category" string for backward compat or quick entry
+  
+  categoryId  String?
+  category    TransactionCategory? @relation(fields: [categoryId], references: [id])
+  
+  sectorId    String?
+  sector      Sector?   @relation(fields: [sectorId], references: [id])
+}
