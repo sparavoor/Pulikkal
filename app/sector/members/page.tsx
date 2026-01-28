@@ -1,7 +1,5 @@
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
-import { Users } from 'lucide-react';
-import CreateMemberForm from '@/app/admin/members/create-member-form'; // reusing admin form? Need Sector Pre-selected.
 
 // Actually, reuse might be hard if form expects full list of sectors. 
 // Sector Admin should only add to their sector.
@@ -30,7 +28,7 @@ async function getUnits(sectorId: string) {
 
 export default async function SectorMembersPage() {
     const session = await auth();
-    // @ts-ignore
+    // @ts-expect-error: NextAuth types
     const sectorId = session?.user?.sectorId;
 
     if (!sectorId) return <div className="p-4">Access Denied</div>;

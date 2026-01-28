@@ -1,7 +1,9 @@
 'use server';
 
 import { signIn, signOut } from '@/auth';
+import { auth } from '@/auth';
 import { AuthError } from 'next-auth';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
@@ -153,6 +155,7 @@ const ProjectSchema = z.object({
     scheme: z.string(),
     scopeUnit: z.coerce.boolean(),
     scopeSector: z.coerce.boolean(),
+    scopeDivision: z.coerce.boolean(),
 });
 
 export async function createProject(prevState: string | undefined, formData: FormData) {
@@ -162,6 +165,7 @@ export async function createProject(prevState: string | undefined, formData: For
         scheme: rawFormData.scheme,
         scopeUnit: rawFormData.scopeUnit === 'on',
         scopeSector: rawFormData.scopeSector === 'on',
+        scopeDivision: rawFormData.scopeDivision === 'on',
     };
 
     const validated = ProjectSchema.safeParse(data);
@@ -170,17 +174,137 @@ export async function createProject(prevState: string | undefined, formData: For
         return "Missing or invalid fields.";
     }
 
-    const { name, scheme, scopeUnit, scopeSector } = validated.data;
+    const { name, scheme, scopeUnit, scopeSector, scopeDivision } = validated.data;
+
+    const session = await auth();
+    // @ts-expect-error: NextAuth types
+    const userRole = session?.user?.role;
+    // @ts-expect-error: NextAuth types
+    const directorateRole = session?.user?.directorateRole;
 
     try {
         await prisma.project.create({
-            data: { name, scheme, scopeUnit, scopeSector }
+            data: {
+                name,
+                scheme,
+                scopeUnit,
+                scopeSector,
+                scopeDivision,
+                // If Division Admin (Portal), save their role. Super Admin leaves it null (Global).
+                directorateRole: userRole === 'DIVISION_ADMIN' ? directorateRole : null
+            }
         });
         revalidatePath('/admin/directorate');
+        revalidatePath('/portal/directorate');
         return "success";
     } catch (error) {
         console.error('Create project error:', error);
         return "Failed to create project.";
+    }
+}
+
+export async function updateProject(prevState: string | undefined, formData: FormData) {
+    const rawFormData = Object.fromEntries(formData.entries());
+    const projectId = rawFormData.id as string;
+
+    if (!projectId) return "Missing Project ID";
+
+    const data = {
+        name: rawFormData.name,
+        scheme: rawFormData.scheme,
+        scopeUnit: rawFormData.scopeUnit === 'on',
+        scopeSector: rawFormData.scopeSector === 'on',
+        scopeDivision: rawFormData.scopeDivision === 'on',
+    };
+
+    const validated = ProjectSchema.safeParse(data);
+
+    if (!validated.success) {
+        return "Missing or invalid fields.";
+    }
+
+    const { name, scheme, scopeUnit, scopeSector, scopeDivision } = validated.data;
+
+    try {
+        await prisma.project.update({
+            where: { id: projectId },
+            data: {
+                name,
+                scheme,
+                scopeUnit,
+                scopeSector,
+                scopeDivision
+            }
+        });
+        revalidatePath('/admin/directorate');
+        revalidatePath('/portal/directorate');
+        return "success";
+    } catch (error) {
+        console.error('Update project error:', error);
+        return "Failed to update project.";
+    }
+}
+
+
+
+export async function toggleProjectCompletion(projectId: string, type: 'DIVISION' | 'SECTOR' | 'UNIT', entityId?: string) {
+    try {
+        // Validation
+        if (type === 'SECTOR' && !entityId) return { success: false, error: 'Sector ID required' };
+        if (type === 'UNIT' && !entityId) return { success: false, error: 'Unit ID required' };
+
+        // Construct where clause to find existing completion
+        const whereClause: Prisma.ProjectCompletionWhereInput = {
+            projectId,
+            type
+        };
+
+        if (type === 'SECTOR') whereClause.sectorId = entityId;
+        if (type === 'UNIT') whereClause.unitId = entityId;
+
+        // Check if exists
+        const existing = await prisma.projectCompletion.findFirst({
+            where: whereClause
+        });
+
+        if (existing) {
+            // Toggle OFF (Delete)
+            await prisma.projectCompletion.delete({
+                where: { id: existing.id }
+            });
+        } else {
+            // Toggle ON (Create)
+            await prisma.projectCompletion.create({
+                data: {
+                    projectId,
+                    type,
+                    sectorId: type === 'SECTOR' ? entityId : null,
+                    unitId: type === 'UNIT' ? entityId : null
+                }
+            });
+        }
+
+        revalidatePath('/sector/projects');
+        revalidatePath('/portal/directorate');
+        revalidatePath('/admin/directorate');
+        return { success: true };
+    } catch (error) {
+        console.error('Toggle completion error:', error);
+        return { success: false, error: 'Failed to update completion status' };
+    }
+}
+
+export async function deleteProject(projectId: string) {
+    try {
+        await prisma.project.delete({
+            where: { id: projectId }
+        });
+        revalidatePath('/admin/directorate');
+        revalidatePath('/portal/directorate');
+        return { success: true };
+    } catch (error) {
+        console.error('Delete project error:', error);
+        return { success: false, error: 'Failed to delete project' };
     }
 }
 
@@ -194,6 +318,7 @@ const MemberSchema = z.object({
 });
 
 export async function createMember(prevState: string | undefined, formData: FormData) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rawFormData = Object.fromEntries(formData.entries()) as Record<string, any>;
     if (rawFormData.sectorId === '') rawFormData.sectorId = null;
     if (rawFormData.unitId === '') rawFormData.unitId = null;
@@ -206,8 +331,53 @@ export async function createMember(prevState: string | undefined, formData: Form
 
     const { name, mobile, sectorId, unitId } = validated.data;
 
+    const session = await auth();
+    // @ts-expect-error: NextAuth types
+    const userRole = session?.user?.role;
+    // @ts-expect-error: NextAuth types
+    const directorateRole = session?.user?.directorateRole;
+
     try {
         await prisma.member.create({
+            data: {
+                name,
+                mobile,
+                sectorId: sectorId || null,
+                unitId: unitId || null,
+                directorateRole: userRole === 'DIVISION_ADMIN' ? directorateRole : null
+            }
+        });
+        revalidatePath('/admin/members');
+        revalidatePath('/sector/members');
+        revalidatePath('/portal/members');
+        return "success";
+    } catch (error) {
+        console.error('Create member error:', error);
+        return "Failed to create member.";
+    }
+}
+
+export async function updateMember(prevState: string | undefined, formData: FormData) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rawFormData = Object.fromEntries(formData.entries()) as Record<string, any>;
+    const memberId = rawFormData.id as string;
+
+    if (!memberId) return "Missing Member ID";
+
+    if (rawFormData.sectorId === '') rawFormData.sectorId = null;
+    if (rawFormData.unitId === '') rawFormData.unitId = null;
+
+    const validated = MemberSchema.safeParse(rawFormData);
+
+    if (!validated.success) {
+        return "Missing or invalid fields.";
+    }
+
+    const { name, mobile, sectorId, unitId } = validated.data;
+
+    try {
+        await prisma.member.update({
+            where: { id: memberId },
             data: {
                 name,
                 mobile,
@@ -217,10 +387,11 @@ export async function createMember(prevState: string | undefined, formData: Form
         });
         revalidatePath('/admin/members');
         revalidatePath('/sector/members');
+        revalidatePath('/portal/members');
         return "success";
     } catch (error) {
-        console.error('Create member error:', error);
-        return "Failed to create member.";
+        console.error('Update member error:', error);
+        return "Failed to update member.";
     }
 }
 
@@ -390,7 +561,6 @@ export async function createCashbookEntry(prevState: string | undefined, formDat
                 date: dateObj,
                 paymentMode,
                 categoryId: categoryId || null,
-                // @ts-ignore
                 sectorId: sectorId || null
             }
         });

@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Calendar, Briefcase, Building, LogOut, FileText, BadgeDollarSign } from 'lucide-react';
+import { LayoutDashboard, Calendar, Building, LogOut, BadgeDollarSign, FileText, Users, Briefcase } from 'lucide-react';
 import { handleSignOut } from '@/lib/actions';
 import { cn } from '@/lib/utils';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function AdminSidebar({ user }: { user: Record<string, any> | null | undefined }) {
     const pathname = usePathname();
 

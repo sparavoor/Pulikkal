@@ -3,7 +3,6 @@
 import { useActionState } from 'react';
 import { authenticate } from '@/lib/actions';
 import { Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils'; // Assuming cn utility exists
 
 export default function LoginPage() {
     const [errorMessage, formAction, isPending] = useActionState(authenticate, undefined);
@@ -26,7 +25,7 @@ export default function LoginPage() {
                             id="username"
                             type="text"
                             name="username"
-                            placeholder="Enter your mobile number"
+                            placeholder="Please enter your mobile number and we&apos;ll check if you have an account."
                             required
                         />
                     </div>
@@ -62,7 +61,7 @@ export default function LoginPage() {
 
                     <div className="mt-4 text-center">
                         <a href="/signup" className="text-sm text-white/80 hover:text-white hover:underline">
-                            Don't have an account? Sign up
+                            Don&apos;t have an account? Sign up
                         </a>
                     </div>
                 </form>

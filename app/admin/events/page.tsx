@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/db';
 import CreateEventForm from './create-event-form';
-import { deleteEvent } from '@/lib/actions'; // Need a client component wrapper for delete button to use server action if passing id? Or just simple form.
 import DeleteEventButton from './delete-event-button'; // Will create this small client component
 
 async function getEvents() {

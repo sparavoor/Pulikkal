@@ -1,6 +1,6 @@
 import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
-import { Users, Calendar, Building, Briefcase } from 'lucide-react';
+import { Users, Building, Briefcase } from 'lucide-react';
 
 async function getStats(sectorId: string) {
     if (!sectorId) return { userCount: 0, unitCount: 0, projectCount: 0 };
@@ -38,7 +38,7 @@ async function getStats(sectorId: string) {
 
 export default async function SectorDashboard() {
     const session = await auth();
-    // @ts-ignore
+    // @ts-expect-error: NextAuth types
     const sectorId = session?.user?.sectorId;
 
     const stats = await getStats(sectorId);

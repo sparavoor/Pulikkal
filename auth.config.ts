@@ -21,26 +21,26 @@ export const authConfig = {
         // Add role to session
         session({ session, token }) {
             if (session.user && token.role) {
-                // @ts-ignore
+                // @ts-expect-error: NextAuth types
                 session.user.role = token.role as string;
-                // @ts-ignore
+                // @ts-expect-error: NextAuth types
                 session.user.username = token.username as string;
-                // @ts-ignore
+                // @ts-expect-error: NextAuth types
                 session.user.sectorId = token.sectorId as string | undefined;
-                // @ts-ignore
+                // @ts-expect-error: NextAuth types
                 session.user.directorateRole = token.directorateRole as string | undefined;
             }
             return session;
         },
         jwt({ token, user }) {
             if (user) {
-                // @ts-ignore
+                // @ts-expect-error: NextAuth types
                 token.role = user.role;
-                // @ts-ignore
+                // @ts-expect-error: NextAuth types
                 token.username = user.username;
-                // @ts-ignore
+                // @ts-expect-error: NextAuth types
                 token.sectorId = user.sectorId;
-                // @ts-ignore
+                // @ts-expect-error: NextAuth types
                 token.directorateRole = user.directorateRole;
             }
             return token;

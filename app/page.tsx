@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
-import { ArrowRight, Calendar } from 'lucide-react';
 
 async function getUpcomingEvents() {
   return await prisma.event.findMany({

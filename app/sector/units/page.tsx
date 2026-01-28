@@ -15,7 +15,7 @@ async function getUnits(sectorId: string) {
 
 export default async function SectorUnitsPage() {
     const session = await auth();
-    // @ts-ignore
+    // @ts-expect-error: NextAuth types
     const sectorId = session?.user?.sectorId;
 
     if (!sectorId) {

@@ -2,7 +2,7 @@
 
 import { useState, useActionState } from 'react';
 import { createMeeting } from '@/lib/actions';
-import { Loader2, Plus, X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 
 const MEETING_TYPES = [
     "SECRETARIAT",

@@ -2,17 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Calendar, Briefcase, Building, LogOut, FileText, IndianRupee } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, Briefcase, Building, LogOut, BadgeDollarSign } from 'lucide-react';
 import { handleSignOut } from '@/lib/actions';
 import { cn } from '@/lib/utils';
 
 const links = [
     { name: 'Dashboard', href: '/sector', icon: LayoutDashboard },
     { name: 'Units', href: '/sector/units', icon: Building },
-    { name: 'Projects', href: '/sector/projects', icon: Briefcase },
+    { name: 'Directorate', href: '/sector/projects', icon: Briefcase },
     { name: 'Members', href: '/sector/members', icon: Users },
     { name: 'Events', href: '/sector/events', icon: Calendar },
-    { name: 'Finance', href: '/sector/finance', icon: IndianRupee },
+    { name: 'Finance', href: '/sector/finance', icon: BadgeDollarSign },
 ];
 
 export default function SectorSidebar() {

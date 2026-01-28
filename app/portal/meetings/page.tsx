@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/db';
-import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import CreateMeetingForm from './create-form';
 

@@ -13,7 +13,7 @@ async function getSectorMeetings(sectorId: string) {
 
 export default async function SectorMeetingsPage() {
     const session = await auth();
-    // @ts-ignore
+    // @ts-expect-error: NextAuth types
     const sectorId = session?.user?.sectorId;
 
     if (!sectorId) return <div className="p-4">Access Denied</div>;
