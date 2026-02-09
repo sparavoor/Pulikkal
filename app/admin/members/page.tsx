@@ -42,6 +42,7 @@ export default async function MembersPage() {
                                 <thead className="bg-gray-50">
                                     <tr>
                                         <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3">Name</th>
+                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Designation</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Mobile</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Sector</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Unit</th>
@@ -51,7 +52,14 @@ export default async function MembersPage() {
                                 <tbody className="divide-y divide-gray-200 bg-white">
                                     {members.map((member) => (
                                         <tr key={member.id} className="hover:bg-gray-50">
-                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">{member.name}</td>
+                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3 max-w-[150px] truncate" title={member.name}>{member.name}</td>
+                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                {member.designation ? (
+                                                    <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                                        {member.designation}
+                                                    </span>
+                                                ) : <span className="text-gray-400">-</span>}
+                                            </td>
                                             <td className="px-3 py-4 text-sm text-gray-500">{member.mobile}</td>
                                             <td className="px-3 py-4 text-sm text-gray-500">
                                                 {member.sector?.name || <span className="text-gray-400 italic">None</span>}

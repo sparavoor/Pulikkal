@@ -55,6 +55,7 @@ export default async function SectorMembersPage() {
                                 <thead>
                                     <tr>
                                         <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">Name</th>
+                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Designation</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Mobile</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Unit</th>
                                         <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-0">
@@ -66,6 +67,13 @@ export default async function SectorMembersPage() {
                                     {members.map((member) => (
                                         <tr key={member.id}>
                                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">{member.name}</td>
+                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                {member.designation ? (
+                                                    <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                                                        {member.designation}
+                                                    </span>
+                                                ) : '-'}
+                                            </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{member.mobile}</td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{member.unit?.name || 'Sector Direct'}</td>
                                             <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 space-x-2 flex items-center justify-end">

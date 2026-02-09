@@ -36,13 +36,13 @@ export default function AppLayoutShell({ sidebar, children }: AppLayoutShellProp
             {/* Sidebar */}
             <div
                 className={cn(
-                    "fixed inset-y-0 left-0 z-40 w-64 transform bg-white transition-transform duration-300 ease-in-out lg:static lg:translate-x-0",
+                    "fixed inset-y-0 left-0 z-40 w-64 transform bg-white transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 border-r border-gray-200",
                     isSidebarOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
-                <div className="h-full flex flex-col relative">
+                <div className="h-full flex flex-col relative overflow-y-auto">
                     {/* Close Button (Mobile Only) */}
-                    <div className="absolute top-4 right-4 lg:hidden">
+                    <div className="absolute top-4 right-4 lg:hidden z-50">
                         <button
                             onClick={() => setIsSidebarOpen(false)}
                             className="p-1 text-gray-500 hover:bg-gray-100 rounded-full"

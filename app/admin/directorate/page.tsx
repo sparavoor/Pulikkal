@@ -3,12 +3,14 @@ import { Prisma } from '@prisma/client';
 import CreateProjectForm from './create-project-form';
 import DeleteProjectButton from './delete-project-button';
 import EditProjectModal from './edit-project-modal';
+import SearchInput from '@/components/SearchInput';
 import DirectorateFilter from './directorate-filter';
 import ProjectStatusModal from '@/components/ProjectStatusModal';
 
-export default async function DirectoratePage({ searchParams }: { searchParams: Promise<{ role?: string }> }) {
+export default async function DirectoratePage({ searchParams }: { searchParams: Promise<{ directorate?: string, query?: string }> }) {
     const params = await searchParams;
-    const filterRole = params.role ? decodeURIComponent(params.role) : undefined;
+    const filterRole = params.directorate ? decodeURIComponent(params.directorate) : undefined;
+    const query = params.query;
 
     // Fetch distinct roles for the filter
     const distinctRoles = await prisma.project.findMany({
@@ -31,6 +33,13 @@ export default async function DirectoratePage({ searchParams }: { searchParams: 
         } else {
             whereClause.directorateRole = filterRole;
         }
+    }
+
+    if (query) {
+        whereClause.name = {
+            contains: query
+            // mode: 'insensitive' // SQLite default is usually insensitive, or if Postgres use 'insensitive' provided by Prisma Client
+        };
     }
 
     const projects = await prisma.project.findMany({
@@ -57,7 +66,8 @@ export default async function DirectoratePage({ searchParams }: { searchParams: 
             <div className="rounded-2xl bg-white p-6 shadow-xl border border-gray-100">
                 <CreateProjectForm />
 
-                <div className="mt-6 flex justify-end">
+                <div className="mt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <SearchInput placeholder="Search projects..." />
                     <DirectorateFilter roles={roles} />
                 </div>
 

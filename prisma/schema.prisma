@@ -72,6 +72,7 @@ model Member {
   
   // Visibility
   directorateRole String?
+  designation     String?
 }
 
 model Meeting {
@@ -80,6 +81,7 @@ model Meeting {
   type      String      // SECRETARIAT, EXECUTIVE, etc.
   date      DateTime
   time      String
+  location  String?
   participantRole String?
   
   // Who created/owns this meeting?

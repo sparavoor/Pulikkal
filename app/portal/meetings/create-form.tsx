@@ -15,8 +15,13 @@ const MEETING_TYPES = [
     "OTHER"
 ];
 
+function formatType(type: string) {
+    return type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+}
+
 export default function CreateMeetingForm() {
     const [isOpen, setIsOpen] = useState(false);
+    const [selectedType, setSelectedType] = useState(MEETING_TYPES[0]);
     const [errorMessage, formAction, isPending] = useActionState(async (prev: string | undefined, formData: FormData) => {
         const res = await createMeeting(prev, formData);
         if (res === "success") {
@@ -49,35 +54,59 @@ export default function CreateMeetingForm() {
 
             <form action={formAction} className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Meeting Title</label>
-                        <input type="text" name="title" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" placeholder="e.g. Monthly Executive" />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Type</label>
-                        <select name="type" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border">
+                    <div className="sm:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700">Meeting Type</label>
+                        <select
+                            name="type"
+                            value={selectedType}
+                            onChange={(e) => setSelectedType(e.target.value)}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                        >
                             {MEETING_TYPES.map(t => (
-                                <option key={t} value={t}>{t.replace('_', ' ')}</option>
+                                <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>
                             ))}
                         </select>
                     </div>
+
+                    {selectedType === 'OTHER' ? (
+                        <div className="sm:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700">Meeting Title</label>
+                            <input type="text" name="title" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" placeholder="e.g. Special Agenda" />
+                        </div>
+                    ) : (
+                        <input type="hidden" name="title" value={formatType(selectedType)} />
+                    )}
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Date</label>
                         <input type="date" name="date" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" />
                     </div>
                     <div>
+                        <label className="block text-sm font-medium text-gray-700">Time</label>
                         <input type="time" name="time" required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" />
                     </div>
                     <div className="sm:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700">Select Role</label>
-                        <select name="participantRole" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border">
-                            <option value="">All Members</option>
-                            <option value="Member">Member</option>
-                            <option value="Unit President">Unit President</option>
-                            <option value="Unit Secretary">Unit Secretary</option>
-                            <option value="Joint Secretary">Joint Secretary</option>
-                            <option value="Treasurer">Treasurer</option>
-                        </select>
+                        <label className="block text-sm font-medium text-gray-700">Location</label>
+                        <input type="text" name="location" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" placeholder="e.g. Conference Hall" />
+                    </div>
+                    <div className="sm:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Select Roles (Multiple)</label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            {["Secretariate", "Executive", "Directorate", "Sector Leader", "Unit Leader", "Member"].map((role) => (
+                                <div key={role} className="flex items-center">
+                                    <input
+                                        id={`role-${role}`}
+                                        name="participantRole"
+                                        type="checkbox"
+                                        value={role}
+                                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                    />
+                                    <label htmlFor={`role-${role}`} className="ml-2 text-sm text-gray-900">
+                                        {role}
+                                    </label>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
 

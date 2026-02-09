@@ -83,6 +83,27 @@ export default function EditMemberModal({ member, sectors, units }: { member: an
                                 </div>
                             </div>
 
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Designation / Role</label>
+                                <div className="relative mt-1">
+                                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <Building className="h-4 w-4 text-gray-400" />
+                                    </div>
+                                    <select
+                                        name="designation"
+                                        defaultValue={member.designation || ''}
+                                        className="block w-full rounded-md border-gray-300 pl-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border bg-white"
+                                    >
+                                        <option value="">Select Designation (Optional)</option>
+                                        <option value="Secretariate">Secretariate</option>
+                                        <option value="Executive">Executive</option>
+                                        <option value="Directorate">Directorate</option>
+                                        <option value="Sector Leader">Sector Leader</option>
+                                        <option value="Unit Leader">Unit Leader</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             {sectors && (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Sector</label>

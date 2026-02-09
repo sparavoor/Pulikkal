@@ -89,19 +89,33 @@ const MeetingSchema = z.object({
     type: z.string(),
     date: z.string(),
     time: z.string(),
+    location: z.string().optional(),
     participantRole: z.string().optional(),
     sectorId: z.string().optional(),
 });
 
 export async function createMeeting(prevState: string | undefined, formData: FormData) {
     const rawFormData = Object.fromEntries(formData.entries());
+
+    // Handle multiple roles
+    const roles = formData.getAll('participantRole');
+    if (roles.length > 0) {
+        // Filter out empty strings if any
+        const validRoles = roles.filter(r => r !== "").map(r => r.toString());
+        if (validRoles.length > 0) {
+            rawFormData.participantRole = validRoles.join(',');
+        } else {
+            delete rawFormData.participantRole;
+        }
+    }
+
     const validatedFields = MeetingSchema.safeParse(rawFormData);
 
     if (!validatedFields.success) {
         return "Missing or invalid fields.";
     }
 
-    const { title, type, date, time, participantRole, sectorId } = validatedFields.data;
+    const { title, type, date, time, participantRole, sectorId, location } = validatedFields.data;
     const dateObj = new Date(date);
 
     try {
@@ -111,6 +125,7 @@ export async function createMeeting(prevState: string | undefined, formData: For
                 type,
                 date: dateObj,
                 time,
+                location: location || null,
                 participantRole: participantRole || null,
                 sectorId: sectorId || null
             }
@@ -120,10 +135,78 @@ export async function createMeeting(prevState: string | undefined, formData: For
         } else {
             revalidatePath('/admin/meetings');
         }
+        revalidatePath('/portal/meetings');
         return "success";
     } catch (error) {
         console.error('Create meeting error:', error);
         return "Failed to create meeting.";
+    }
+}
+
+export async function updateMeeting(prevState: string | undefined, formData: FormData) {
+    const rawFormData = Object.fromEntries(formData.entries());
+    const meetingId = rawFormData.id as string;
+
+    if (!meetingId) return "Missing Meeting ID";
+
+    // Handle multiple roles
+    const roles = formData.getAll('participantRole');
+    if (roles.length > 0) {
+        const validRoles = roles.filter(r => r !== "").map(r => r.toString());
+        if (validRoles.length > 0) {
+            rawFormData.participantRole = validRoles.join(',');
+        } else {
+            delete rawFormData.participantRole;
+        }
+    }
+
+    const validatedFields = MeetingSchema.safeParse(rawFormData);
+
+    if (!validatedFields.success) {
+        return "Missing or invalid fields.";
+    }
+
+    const { title, type, date, time, participantRole, sectorId, location } = validatedFields.data;
+    const dateObj = new Date(date);
+
+    try {
+        await prisma.meeting.update({
+            where: { id: meetingId },
+            data: {
+                title,
+                type,
+                date: dateObj,
+                time,
+                location: location || null,
+                participantRole: participantRole || null,
+                sectorId: sectorId || null
+            }
+        });
+        if (sectorId) {
+            revalidatePath('/sector/meetings');
+        } else {
+            revalidatePath('/admin/meetings');
+        }
+        revalidatePath('/portal/meetings');
+        return "success";
+    } catch (error) {
+        console.error('Update meeting error:', error);
+        return "Failed to update meeting.";
+    }
+}
+
+export async function deleteMeeting(meetingId: string) {
+    try {
+        await prisma.meeting.delete({
+            where: { id: meetingId }
+        });
+        revalidatePath('/admin/meetings');
+        revalidatePath('/sector/meetings');
+        revalidatePath('/portal/meetings');
+        return { success: true };
+    } catch (error) {
+        console.error('Delete meeting error:', error);
+        return { success: false, error: 'Failed to delete meeting' };
     }
 }
 
@@ -315,6 +398,7 @@ const MemberSchema = z.object({
     mobile: z.string().min(10),
     sectorId: z.string().optional().nullable(),
     unitId: z.string().optional().nullable(),
+    designation: z.string().optional(),
 });
 
 export async function createMember(prevState: string | undefined, formData: FormData) {
@@ -329,7 +413,7 @@ export async function createMember(prevState: string | undefined, formData: Form
         return "Missing or invalid fields.";
     }
 
-    const { name, mobile, sectorId, unitId } = validated.data;
+    const { name, mobile, sectorId, unitId, designation } = validated.data;
 
     const session = await auth();
     // @ts-expect-error: NextAuth types
@@ -344,7 +428,8 @@ export async function createMember(prevState: string | undefined, formData: Form
                 mobile,
                 sectorId: sectorId || null,
                 unitId: unitId || null,
-                directorateRole: userRole === 'DIVISION_ADMIN' ? directorateRole : null
+                directorateRole: userRole === 'DIVISION_ADMIN' ? directorateRole : null,
+                designation: designation || null
             }
         });
         revalidatePath('/admin/members');
@@ -373,16 +458,35 @@ export async function updateMember(prevState: string | undefined, formData: Form
         return "Missing or invalid fields.";
     }
 
-    const { name, mobile, sectorId, unitId } = validated.data;
+    const { name, mobile, sectorId, unitId, designation } = validated.data;
+
+    const session = await auth();
+    // @ts-expect-error: NextAuth types
+    const userRole = session?.user?.role;
+    // @ts-expect-error: NextAuth types
+    const directorateRole = session?.user?.directorateRole;
 
     try {
+        // PERMISSION CHECK
+        if (userRole === 'DIVISION_ADMIN') {
+            const memberToCheck = await prisma.member.findUnique({
+                where: { id: memberId },
+                select: { directorateRole: true }
+            });
+
+            if (!memberToCheck || memberToCheck.directorateRole !== directorateRole) {
+                return "Unauthorized: You can only edit members you created.";
+            }
+        }
+
         await prisma.member.update({
             where: { id: memberId },
             data: {
                 name,
                 mobile,
                 sectorId: sectorId || null,
-                unitId: unitId || null
+                unitId: unitId || null,
+                designation: designation || null
             }
         });
         revalidatePath('/admin/members');
@@ -396,7 +500,25 @@ export async function updateMember(prevState: string | undefined, formData: Form
 }
 
 export async function deleteMember(memberId: string) {
+    const session = await auth();
+    // @ts-expect-error: NextAuth types
+    const userRole = session?.user?.role;
+    // @ts-expect-error: NextAuth types
+    const directorateRole = session?.user?.directorateRole;
+
     try {
+        // PERMISSION CHECK
+        if (userRole === 'DIVISION_ADMIN') {
+            const memberToCheck = await prisma.member.findUnique({
+                where: { id: memberId },
+                select: { directorateRole: true }
+            });
+
+            if (!memberToCheck || memberToCheck.directorateRole !== directorateRole) {
+                return { success: false, error: 'Unauthorized: You can only delete members you created.' };
+            }
+        }
+
         await prisma.member.delete({
             where: { id: memberId }
         });

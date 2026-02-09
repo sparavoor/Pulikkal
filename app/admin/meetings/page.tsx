@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/db';
 import Link from 'next/link';
 import CreateMeetingForm from './create-form';
+import EditMeetingModal from './edit-meeting-modal';
+import DeleteMeetingButton from './delete-meeting-button';
 
 async function getMeetings() {
     return await prisma.meeting.findMany({
@@ -15,10 +17,6 @@ export default async function MeetingsPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold text-gray-900">Meetings</h1>
-                {/* We can use a Dialog here, but for simplicity/speed let's toggle a form or just link to new page.
-            Actually, the instruction said "Add Meeting Option Access For All Directors".
-            I'll use a Client Component Wrapper for the "Add" button that opens a Modal.
-         */}
             </div>
 
             <div className="rounded-2xl bg-white p-6 shadow-xl">
@@ -46,9 +44,10 @@ export default async function MeetingsPage() {
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{meeting.type}</td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{new Date(meeting.date).toLocaleDateString()}</td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{meeting.time}</td>
-                                            <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 space-x-2">
-                                                <Link href={`/admin/meetings/${meeting.id}/attendance`} className="text-indigo-600 hover:text-indigo-900">Attendance</Link>
-                                                <a href="#" className="text-red-600 hover:text-red-900">Delete</a>
+                                            <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 space-x-2 flex items-center justify-end">
+                                                <EditMeetingModal meeting={meeting} />
+                                                <DeleteMeetingButton meetingId={meeting.id} />
+                                                <Link href={`/admin/meetings/${meeting.id}/attendance`} className="text-indigo-600 hover:text-indigo-900 text-sm">Attendance</Link>
                                             </td>
                                         </tr>
                                     ))}

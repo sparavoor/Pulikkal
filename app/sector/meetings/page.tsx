@@ -2,6 +2,8 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/db';
 import CreateSectorMeetingForm from './create-meeting-form';
 import Link from 'next/link';
+import EditMeetingModal from '../../admin/meetings/edit-meeting-modal';
+import DeleteMeetingButton from '../../admin/meetings/delete-meeting-button';
 
 async function getSectorMeetings(sectorId: string) {
     if (!sectorId) return [];
@@ -49,8 +51,10 @@ export default async function SectorMeetingsPage() {
                                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">{meeting.title}</td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{meeting.type}</td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{new Date(meeting.date).toLocaleDateString()}</td>
-                                            <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 space-x-2">
-                                                <Link href={`/sector/meetings/${meeting.id}/attendance`} className="text-pink-600 hover:text-pink-900">Attendance</Link>
+                                            <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0 space-x-2 flex items-center justify-end">
+                                                <EditMeetingModal meeting={meeting} />
+                                                <DeleteMeetingButton meetingId={meeting.id} />
+                                                <Link href={`/sector/meetings/${meeting.id}/attendance`} className="text-pink-600 hover:text-pink-900 text-sm">Attendance</Link>
                                             </td>
                                         </tr>
                                     ))}

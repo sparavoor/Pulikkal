@@ -8,33 +8,33 @@ export default function LoginPage() {
     const [errorMessage, formAction, isPending] = useActionState(authenticate, undefined);
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4">
-            <div className="glass w-full max-w-md rounded-2xl p-8 shadow-2xl backdrop-blur-xl">
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+            <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
                 <div className="mb-8 text-center">
-                    <h1 className="text-3xl font-bold text-white">Welcome Back</h1>
-                    <p className="text-indigo-100">Sign in to your account</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
+                    <p className="mt-2 text-gray-500">Sign in to your account</p>
                 </div>
 
                 <form action={formAction} className="space-y-6">
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-white" htmlFor="username">
+                        <label className="mb-2 block text-sm font-medium text-gray-700" htmlFor="username">
                             Mobile Number
                         </label>
                         <input
-                            className="w-full rounded-lg border border-white/20 bg-white/10 p-3 text-white placeholder-white/50 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/20"
+                            className="w-full rounded-lg border border-gray-300 bg-white p-3 text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                             id="username"
                             type="text"
                             name="username"
-                            placeholder="Please enter your mobile number and we&apos;ll check if you have an account."
+                            placeholder="Enter your mobile number"
                             required
                         />
                     </div>
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-white" htmlFor="password">
+                        <label className="mb-2 block text-sm font-medium text-gray-700" htmlFor="password">
                             Password
                         </label>
                         <input
-                            className="w-full rounded-lg border border-white/20 bg-white/10 p-3 text-white placeholder-white/50 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/20"
+                            className="w-full rounded-lg border border-gray-300 bg-white p-3 text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                             id="password"
                             type="password"
                             name="password"
@@ -45,7 +45,7 @@ export default function LoginPage() {
                     </div>
 
                     <button
-                        className="w-full transform rounded-lg bg-white py-3 font-bold text-indigo-600 transition-all hover:scale-[1.02] hover:bg-opacity-90 active:scale-95 disabled:opacity-70"
+                        className="w-full transform rounded-lg bg-indigo-600 py-3 font-bold text-white transition-all hover:bg-indigo-500 active:scale-95 disabled:opacity-70"
                         aria-disabled={isPending}
                         disabled={isPending}
                     >
@@ -54,13 +54,13 @@ export default function LoginPage() {
                     </button>
 
                     {errorMessage && (
-                        <div className="rounded-lg bg-red-500/20 p-3 text-center text-sm text-red-100 border border-red-500/30">
+                        <div className="rounded-lg bg-red-50 p-3 text-center text-sm text-red-600 border border-red-200">
                             <p>{errorMessage}</p>
                         </div>
                     )}
 
                     <div className="mt-4 text-center">
-                        <a href="/signup" className="text-sm text-white/80 hover:text-white hover:underline">
+                        <a href="/signup" className="text-sm text-indigo-600 hover:text-indigo-500 hover:underline">
                             Don&apos;t have an account? Sign up
                         </a>
                     </div>
