@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/db';
 import { Users, Calendar, Building, Briefcase } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 async function getStats() {
     const userCount = await prisma.user.count();
     const sectorCount = await prisma.sector.count();
