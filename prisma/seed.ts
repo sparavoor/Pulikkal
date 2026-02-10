@@ -23,21 +23,24 @@ async function main() {
         });
     }
 
-    const hashedPassword = await bcrypt.hash("password123", 10);
+    const hashedPassword = await bcrypt.hash("admin123", 10);
 
-    await prisma.user.upsert({
+    const admin = await prisma.user.upsert({
         where: { username: "admin" },
         update: {
             password: hashedPassword,
-            role: "SUPER_ADMIN"
+            role: "DIVISION_ADMIN",
+            name: "Division Super Admin"
         },
         create: {
             username: "admin",
             password: hashedPassword,
-            name: "Division Secretary",
-            role: "SUPER_ADMIN",
+            name: "Division Super Admin",
+            role: "DIVISION_ADMIN",
+            directorateRole: "PRESIDENT" // Optional default
         }
     });
+    console.log({ admin });
 
     console.log("Seeding Categories...");
     const categories = [
